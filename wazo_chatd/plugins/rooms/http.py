@@ -3,7 +3,7 @@
 
 from marshmallow import ValidationError
 from flask import request
-
+from marshmallow import EXCLUDE
 from xivo.auth_verifier import required_acl
 from xivo.mallow.validate import Length
 from xivo.tenant_flask_helpers import token
@@ -26,7 +26,7 @@ class UserRoomListResource(AuthResource):
 
     @required_acl('chatd.users.me.rooms.create')
     def post(self):
-        room_args = RoomSchema().load(request.get_json())
+        room_args = RoomSchema().load(request.get_json(), unknown=EXCLUDE)
 
         if self._is_duplicate_user(room_args['users']):
             raise DuplicateUserException()
@@ -78,7 +78,9 @@ class UserMessageListResource(AuthResource):
 
     @required_acl('chatd.users.me.rooms.messages.read')
     def get(self):
-        filter_parameters = MessageListRequestSchema().load(request.args)
+        filter_parameters = MessageListRequestSchema().load(
+            request.args, unknown=EXCLUDE
+        )
         messages = self._service.list_user_messages(
             token.tenant_uuid, token.user_uuid, **filter_parameters
         )
@@ -100,7 +102,7 @@ class UserRoomMessageListResource(AuthResource):
     @required_acl('chatd.users.me.rooms.{room_uuid}.messages.create')
     def post(self, room_uuid):
         room = self._service.get([token.tenant_uuid], room_uuid)
-        message_args = MessageSchema().load(request.get_json())
+        message_args = MessageSchema().load(request.get_json(), unknown=EXCLUDE)
         message_args['user_uuid'] = token.user_uuid
         message_args['tenant_uuid'] = token.tenant_uuid
         message = RoomMessage(**message_args)
@@ -110,7 +112,7 @@ class UserRoomMessageListResource(AuthResource):
 
     @required_acl('chatd.users.me.rooms.{room_uuid}.messages.read')
     def get(self, room_uuid):
-        filter_parameters = ListRequestSchema().load(request.args)
+        filter_parameters = ListRequestSchema().load(request.args, unknown=EXCLUDE)
         room = self._service.get([token.tenant_uuid], room_uuid)
         messages = self._service.list_messages(room, **filter_parameters)
         filtered = self._service.count_messages(room, **filter_parameters)

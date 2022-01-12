@@ -4,7 +4,7 @@
 from flask import request
 
 from xivo.auth_verifier import required_acl
-
+from marshmallow import EXCLUDE
 from wazo_chatd.http import AuthResource
 from wazo_chatd.plugin_helpers.http import update_model_instance
 from wazo_chatd.plugin_helpers.tenant import get_tenant_uuids
@@ -20,7 +20,7 @@ class PresenceListResource(AuthResource):
     @required_acl('chatd.users.presences.read')
     @status_validator.presence_initialization
     def get(self):
-        parameters = ListRequestSchema().load(request.args)
+        parameters = ListRequestSchema().load(request.args, unknown=EXCLUDE)
         tenant_uuids = get_tenant_uuids(parameters.pop('recurse'))
 
         presences = self._service.list_(tenant_uuids, **parameters)
@@ -49,7 +49,7 @@ class PresenceItemResource(AuthResource):
     def put(self, user_uuid):
         tenant_uuids = get_tenant_uuids(recurse=True)
         presence = self._service.get(tenant_uuids, user_uuid)
-        presence_args = UserPresenceSchema().load(request.get_json())
+        presence_args = UserPresenceSchema().load(request.get_json(), unknown=EXCLUDE)
         update_model_instance(presence, presence_args)
         self._service.update(presence)
         return '', 204
