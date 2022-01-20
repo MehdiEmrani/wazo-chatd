@@ -11,14 +11,14 @@ from xivo.consul_helpers import ServiceCatalogRegistration
 from xivo.status import StatusAggregator
 from xivo.token_renewer import TokenRenewer
 
-from xivo_bus import EventMarshaller, EventLogger
+from xivo_bus import EventMarshaller
 
-from . import auth, bus
+from . import auth
 from .database.helpers import init_db
 from .database.queries import DAO
 from .http_server import api, app, CoreRestApi
 from .thread_manager import ThreadManager
-from .bus import BusChatd
+from .bus import BusChatd, ChatdInjector
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class Controller:
         self.rest_api = CoreRestApi(config)
         self.bus = BusChatd(
             name='wazo-chatd',
-            middlewares=[EventMarshaller(config['uuid']), EventLogger],
+            middlewares=[EventMarshaller(config['uuid']), ChatdInjector],
             **config['bus']
         )
         self.thread_manager = ThreadManager()
