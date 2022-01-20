@@ -12,13 +12,15 @@ class BusClient(bus_helper.BusClient):
     def send_tenant_created_event(self, tenant_uuid):
         self.publish(
             {'data': {'uuid': str(tenant_uuid)}, 'name': 'auth_tenant_added'},
-            f'auth.tenants.{tenant_uuid}.created',
+            routing_key=f'auth.tenants.{tenant_uuid}.created',
+            headers={'name': 'auth_tenant_added'},
         )
 
     def send_tenant_deleted_event(self, tenant_uuid):
         self.publish(
             {'data': {'uuid': str(tenant_uuid)}, 'name': 'auth_tenant_deleted'},
-            f'auth.tenants.{tenant_uuid}.deleted',
+            routing_key=f'auth.tenants.{tenant_uuid}.deleted',
+            headers={'name': 'auth_tenant_deleted'},
         )
 
     def send_user_created_event(self, user_uuid, tenant_uuid):
@@ -27,7 +29,8 @@ class BusClient(bus_helper.BusClient):
                 'data': {'uuid': str(user_uuid), 'tenant_uuid': str(tenant_uuid)},
                 'name': 'user_created',
             },
-            'config.user.created',
+            routing_key='config.user.created',
+            headers={'name': 'user_created'},
         )
 
     def send_user_deleted_event(self, user_uuid, tenant_uuid):
@@ -36,7 +39,8 @@ class BusClient(bus_helper.BusClient):
                 'data': {'uuid': str(user_uuid), 'tenant_uuid': str(tenant_uuid)},
                 'name': 'user_deleted',
             },
-            'config.user.deleted',
+            routing_key='config.user.deleted',
+            headers={'name': 'user_deleted'},
         )
 
     def send_session_created_event(
@@ -52,7 +56,8 @@ class BusClient(bus_helper.BusClient):
                 },
                 'name': 'auth_session_created',
             },
-            f'auth.sessions.{session_uuid}.created',
+            routing_key=f'auth.sessions.{session_uuid}.created',
+            headers={'name': 'auth_session_created'},
         )
 
     def send_session_deleted_event(self, session_uuid, user_uuid, tenant_uuid):
@@ -65,7 +70,8 @@ class BusClient(bus_helper.BusClient):
                 },
                 'name': 'auth_session_deleted',
             },
-            f'auth.sessions.{session_uuid}.deleted',
+            routing_key=f'auth.sessions.{session_uuid}.deleted',
+            headers={'name': 'auth_session_deleted'},
         )
 
     def send_refresh_token_created_event(
@@ -81,7 +87,8 @@ class BusClient(bus_helper.BusClient):
                 },
                 'name': 'auth_refresh_token_created',
             },
-            f'auth.users.{user_uuid}.tokens.{client_id}.created',
+            routing_key=f'auth.users.{user_uuid}.tokens.{client_id}.created',
+            headers={'name': 'auth_refresh_token_created'},
         )
 
     def send_refresh_token_deleted_event(self, client_id, user_uuid, tenant_uuid):
@@ -94,7 +101,8 @@ class BusClient(bus_helper.BusClient):
                 },
                 'name': 'auth_refresh_token_deleted',
             },
-            f'auth.users.{user_uuid}.tokens.{client_id}.deleted',
+            routing_key=f'auth.users.{user_uuid}.tokens.{client_id}.deleted',
+            headers={'name': 'auth_refresh_token_deleted'},
         )
 
     def send_user_line_associated_event(
@@ -114,7 +122,8 @@ class BusClient(bus_helper.BusClient):
                 },
                 'name': 'user_line_associated',
             },
-            f'config.users.{user_uuid}.lines.{line_id}.updated',
+            routing_key=f'config.users.{user_uuid}.lines.{line_id}.updated',
+            headers={'name': 'user_line_associated'},
         )
 
     def send_line_dissociated_event(self, line_id, user_uuid, tenant_uuid):
@@ -132,7 +141,8 @@ class BusClient(bus_helper.BusClient):
                 },
                 'name': 'user_line_dissociated',
             },
-            f'config.users.{user_uuid}.lines.{line_id}.deleted',
+            routing_key=f'config.users.{user_uuid}.lines.{line_id}.deleted',
+            headers={'name': 'user_line_dissociated'},
         )
 
     def send_device_state_changed_event(self, device_name, device_state):
@@ -141,7 +151,8 @@ class BusClient(bus_helper.BusClient):
                 'data': {'State': device_state, 'Device': device_name},
                 'name': 'DeviceStateChange',
             },
-            'ami.DeviceStateChange',
+            routing_key='ami.DeviceStateChange',
+            headers={'name': 'DeviceStateChange'},
         )
 
     def send_new_channel_event(self, channel_name):
@@ -150,7 +161,8 @@ class BusClient(bus_helper.BusClient):
                 'data': {'Channel': channel_name, 'ChannelStateDesc': 'Ring'},
                 'name': 'Newchannel',
             },
-            'ami.Newchannel',
+            routing_key='ami.Newchannel',
+            headers={'name': 'Newchannel'},
         )
 
     def send_new_state_event(self, channel_name, state='undefined'):
@@ -159,19 +171,22 @@ class BusClient(bus_helper.BusClient):
                 'data': {'Channel': channel_name, 'ChannelStateDesc': state},
                 'name': 'Newstate',
             },
-            'ami.Newstate',
+            routing_key='ami.Newstate',
+            headers={'name': 'Newstate'},
         )
 
     def send_hangup_event(self, channel_name):
         self.publish(
             {'data': {'Channel': channel_name}, 'name': 'Hangup'},
-            'ami.Hangup',
+            routing_key='ami.Hangup',
+            headers={'name': 'Hangup'},
         )
 
     def send_hold_event(self, channel_name):
         self.publish(
             {'data': {'Channel': channel_name}, 'name': 'Hold'},
-            'ami.Hold',
+            routing_key='ami.Hold',
+            headers={'name': 'Hold'},
         )
 
     def send_unhold_event(self, channel_name):
@@ -180,7 +195,8 @@ class BusClient(bus_helper.BusClient):
                 'data': {'Channel': channel_name, 'ChannelStateDesc': 'Up'},
                 'name': 'Unhold',
             },
-            'ami.Hold',
+            routing_key='ami.Hold',
+            headers={'name': 'Unhold'},
         )
 
     def send_dnd_event(self, user_uuid, tenant_uuid, status):
@@ -193,5 +209,6 @@ class BusClient(bus_helper.BusClient):
                 },
                 'name': 'users_services_dnd_updated',
             },
-            f'config.users.{user_uuid}.services.dnd.updated',
+            routing_key=f'config.users.{user_uuid}.services.dnd.updated',
+            headers={'name': 'users_services_dnd_updated'},
         )

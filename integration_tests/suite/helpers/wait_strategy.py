@@ -30,7 +30,7 @@ class EverythingOkWaitStrategy(WaitStrategy):
                 has_entries(
                     {
                         'rest_api': has_entries(status='ok'),
-                        'bus_consumer': has_entries(status='ok'),
+                        'bus': has_entries(status='ok'),
                         'master_tenant': has_entries(status='ok'),
                     }
                 ),
@@ -64,7 +64,7 @@ class PresenceInitOkWaitStrategy(WaitStrategy):
                     {
                         'presence_initialization': has_entries(status='ok'),
                         'rest_api': has_entries(status='ok'),
-                        'bus_consumer': has_entries(status='ok'),
+                        'bus': has_entries(status='ok'),
                     }
                 ),
             )
