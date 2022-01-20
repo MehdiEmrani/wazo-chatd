@@ -15,9 +15,9 @@ class Plugin:
         api = dependencies['api']
         config = dependencies['config']
         dao = dependencies['dao']
-        bus_publisher = dependencies['bus_publisher']
+        bus = dependencies['bus']
 
-        notifier = RoomNotifier(bus_publisher)
+        notifier = RoomNotifier(bus)
         service = RoomService(config['uuid'], dao, notifier)
 
         api.add_resource(

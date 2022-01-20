@@ -28,24 +28,35 @@ class BusEventHandler:
         self._dao = dao
         self._notifier = notifier
 
-    def subscribe(self, bus_consumer):
-        bus_consumer.on_event('auth_tenant_added', self._tenant_created)
-        bus_consumer.on_event('auth_tenant_deleted', self._tenant_deleted)
-        bus_consumer.on_event('user_created', self._user_created)
-        bus_consumer.on_event('user_deleted', self._user_deleted)
-        bus_consumer.on_event('auth_session_created', self._session_created)
-        bus_consumer.on_event('auth_session_deleted', self._session_deleted)
-        bus_consumer.on_event('auth_refresh_token_created', self._refresh_token_created)
-        bus_consumer.on_event('auth_refresh_token_deleted', self._refresh_token_deleted)
-        bus_consumer.on_event('user_line_associated', self._user_line_associated)
-        bus_consumer.on_event('user_line_dissociated', self._user_line_dissociated)
-        bus_consumer.on_event('users_services_dnd_updated', self._user_dnd_updated)
-        bus_consumer.on_event('DeviceStateChange', self._device_state_change)
-        bus_consumer.on_event('Hangup', self._channel_deleted)
-        bus_consumer.on_event('Newchannel', self._channel_created)
-        bus_consumer.on_event('Newstate', self._channel_updated)
-        bus_consumer.on_event('Hold', self._channel_hold)
-        bus_consumer.on_event('Unhold', self._channel_unhold)
+    def subscribe(self, bus):
+        def make_subscription(event, action):
+            return (
+                event,
+                action,
+                {'name': event}
+            )
+
+        events = (
+            make_subscription('auth_tenant_added', self._tenant_created),
+            make_subscription('auth_tenant_deleted', self._tenant_deleted),
+            make_subscription('user_created', self._user_created),
+            make_subscription('user_deleted', self._user_deleted),
+            make_subscription('auth_session_created', self._session_created),
+            make_subscription('auth_session_deleted', self._session_deleted),
+            make_subscription('auth_refresh_token_created', self._refresh_token_created),
+            make_subscription('auth_refresh_token_deleted', self._refresh_token_deleted),
+            make_subscription('user_line_associated', self._user_line_associated),
+            make_subscription('user_line_dissociated', self._user_line_dissociated),
+            make_subscription('users_services_dnd_updated', self._user_dnd_updated),
+            make_subscription('DeviceStateChange', self._device_state_change),
+            make_subscription('Hangup', self._channel_deleted),
+            make_subscription('Newchannel', self._channel_created),
+            make_subscription('Newstate', self._channel_updated),
+            make_subscription('Hold', self._channel_hold),
+            make_subscription('Unhold', self._channel_unhold),
+        )
+        for event, action, headers in events:
+            bus.subscribe(event, action, headers=headers)
 
     def _user_created(self, event):
         user_uuid = event['uuid']

@@ -39,9 +39,14 @@ _DEFAULT_CONFIG = {
         'password': 'guest',
         'host': 'localhost',
         'port': 5672,
-        'exchange_name': 'xivo',
-        'exchange_type': 'topic',
-        'exchange_headers_name': 'wazo-headers',
+        'subscribe': {
+            'exchange_name': 'wazo-headers',
+            'exchange_type': 'headers'
+        },
+        'publish': {
+            'exchange_name': 'xivo',
+            'exchange_type': 'topic'
+        }
     },
     'amid': {'host': 'localhost', 'port': 9491, 'prefix': None, 'https': False},
     'confd': {

@@ -11,11 +11,14 @@ from xivo.consul_helpers import ServiceCatalogRegistration
 from xivo.status import StatusAggregator
 from xivo.token_renewer import TokenRenewer
 
+from xivo_bus import EventMarshaller, EventLogger
+
 from . import auth, bus
 from .database.helpers import init_db
 from .database.queries import DAO
 from .http_server import api, app, CoreRestApi
 from .thread_manager import ThreadManager
+from .bus import BusChatd
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +36,11 @@ class Controller:
         ]
         self.status_aggregator = StatusAggregator()
         self.rest_api = CoreRestApi(config)
-        self.bus_consumer = bus.Consumer(config)
-        self.bus_publisher = bus.Publisher(config)
+        self.bus = BusChatd(
+            name='wazo-chatd',
+            middlewares=[EventMarshaller(config['uuid']), EventLogger],
+            **config['bus']
+        )
         self.thread_manager = ThreadManager()
         auth_client = AuthClient(**config['auth'])
         self.token_renewer = TokenRenewer(auth_client)
@@ -49,8 +55,7 @@ class Controller:
                 'api': api,
                 'config': config,
                 'dao': DAO(),
-                'bus_consumer': self.bus_consumer,
-                'bus_publisher': self.bus_publisher,
+                'bus': self.bus,
                 'status_aggregator': self.status_aggregator,
                 'thread_manager': self.thread_manager,
             },
@@ -58,13 +63,13 @@ class Controller:
 
     def run(self):
         logger.info('wazo-chatd starting...')
-        self.status_aggregator.add_provider(self.bus_consumer.provide_status)
+        self.status_aggregator.add_provider(self.bus.provide_status)
         self.status_aggregator.add_provider(auth.provide_status)
         signal.signal(signal.SIGTERM, partial(_sigterm_handler, self))
 
         with self.thread_manager:
             with self.token_renewer:
-                with bus.consumer_thread(self.bus_consumer):
+                with self.bus.threads:
                     with ServiceCatalogRegistration(*self._service_discovery_args):
                         self.rest_api.run()
 

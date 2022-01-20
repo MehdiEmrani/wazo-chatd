@@ -23,12 +23,11 @@ class Plugin:
         api = dependencies['api']
         config = dependencies['config']
         dao = dependencies['dao']
-        bus_consumer = dependencies['bus_consumer']
-        bus_publisher = dependencies['bus_publisher']
+        bus = dependencies['bus']
         status_aggregator = dependencies['status_aggregator']
         status_validator.set_config(status_aggregator, config)
 
-        notifier = PresenceNotifier(bus_publisher)
+        notifier = PresenceNotifier(bus)
         service = PresenceService(dao, notifier)
         initialization = config['initialization']
 
@@ -44,7 +43,7 @@ class Plugin:
             thread_manager.manage(initiator_thread)
 
         bus_event_handler = BusEventHandler(dao, notifier)
-        bus_event_handler.subscribe(bus_consumer)
+        bus_event_handler.subscribe(bus)
 
         api.add_resource(
             PresenceListResource, '/users/presences', resource_class_args=[service]
